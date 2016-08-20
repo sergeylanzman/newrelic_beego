@@ -28,23 +28,16 @@ func EndTransaction(ctx *context.Context) {
 func init() {
 	appName := beego.AppConfig.String("appname")
 	license := beego.AppConfig.String("newrelic_license")
-	betaToken := beego.AppConfig.String("newrelic_beta_token")
 	if license == "" {
 		beego.Warn("Please set NewRelic license in config(newrelic_license)")
 		return
 	}
-	if betaToken == "" {
-		beego.Warn("Please set NewRelic beta token in config(newrelic_beta_token)")
-		return
-	}
 	config := newrelic.NewConfig(appName, license)
-	config.BetaToken = betaToken
 	app, err := newrelic.NewApplication(config)
 	if err != nil {
 		beego.Warn(err.Error())
 		return
 	}
-
 	NewrelicAgent = app
 	beego.InsertFilter("*", beego.BeforeRouter, StartTransaction, false)
 	beego.InsertFilter("*", beego.FinishRouter, EndTransaction, false)
