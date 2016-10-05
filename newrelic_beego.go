@@ -26,7 +26,10 @@ func EndTransaction(ctx *context.Context) {
 }
 
 func init() {
-	appName := beego.AppConfig.String("appname")
+	appName := beego.AppConfig.String("newrelic_appname")
+	if appName == "" {
+		appName = beego.AppConfig.String("appname")
+	}
 	license := beego.AppConfig.String("newrelic_license")
 	if license == "" {
 		beego.Warn("Please set NewRelic license in config(newrelic_license)")
