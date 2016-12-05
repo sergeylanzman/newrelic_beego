@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strings"
 
+	"os"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"github.com/newrelic/go-agent"
@@ -41,14 +43,21 @@ func EndTransaction(ctx *context.Context) {
 }
 
 func init() {
-	appName := beego.AppConfig.String("newrelic_appname")
+	appName := os.Getenv("NEW_RELIC_APP_NAME")
+	license := os.Getenv("NEW_RELIC_LICENSE_KEY")
+
+	if appName == "" {
+		appName = beego.AppConfig.String("newrelic_appname")
+	}
 	if appName == "" {
 		appName = beego.AppConfig.String("appname")
 	}
-	license := beego.AppConfig.String("newrelic_license")
 	if license == "" {
-		beego.Warn("Please set NewRelic license in config(newrelic_license)")
-		return
+		license = beego.AppConfig.String("newrelic_license")
+		if license == "" && beego.BConfig.RunMode == "prod" {
+			beego.Warn("Please set NewRelic license in config(newrelic_license)")
+			return
+		}
 	}
 	config := newrelic.NewConfig(appName, license)
 	app, err := newrelic.NewApplication(config)
