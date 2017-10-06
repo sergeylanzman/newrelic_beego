@@ -12,6 +12,8 @@ import (
 	"github.com/newrelic/go-agent"
 )
 
+var reNumberIDInPath = regexp.MustCompile("[0-9]{2,}")
+var reg = regexp.MustCompile(`[a-zA-Z0-9_]+`)
 var NewrelicAgent newrelic.Application
 
 func StartTransaction(ctx *context.Context) {
@@ -29,8 +31,7 @@ func NameTransaction(ctx *context.Context) {
 	if ok {
 		path = generatePath(pattern)
 	} else {
-		re := regexp.MustCompile("[0-9]{2,}")
-		path = re.ReplaceAllString(ctx.Request.URL.Path, ":id")
+		path = reNumberIDInPath.ReplaceAllString(ctx.Request.URL.Path, ":id")
 	}
 	txName := fmt.Sprintf("%s %s", ctx.Request.Method, path)
 	tx.SetName(txName)
@@ -67,7 +68,7 @@ func init() {
 	}
 	NewrelicAgent = app
 	beego.InsertFilter("*", beego.BeforeRouter, StartTransaction, false)
-	beego.InsertFilter("*", beego.BeforeExec, NameTransaction, false)
+	beego.InsertFilter("*", beego.AfterExec, NameTransaction, false)
 	beego.InsertFilter("*", beego.FinishRouter, EndTransaction, false)
 	beego.Info("NewRelic agent start")
 }
@@ -94,7 +95,6 @@ func replaceSegment(seg string) string {
 		var startexp bool
 		var param []rune
 		var skipnum int
-		reg := regexp.MustCompile(`[a-zA-Z0-9_]+`)
 		for i, v := range seg {
 			if skipnum > 0 {
 				skipnum--
