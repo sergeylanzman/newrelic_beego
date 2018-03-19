@@ -17,7 +17,8 @@ var reg = regexp.MustCompile(`[a-zA-Z0-9_]+`)
 var NewrelicAgent newrelic.Application
 
 func StartTransaction(ctx *context.Context) {
-	tx := NewrelicAgent.StartTransaction(ctx.Request.URL.Path, ctx.ResponseWriter, ctx.Request)
+	tx := NewrelicAgent.StartTransaction(ctx.Request.URL.Path, ctx.ResponseWriter.ResponseWriter, ctx.Request)
+	ctx.ResponseWriter.ResponseWriter = tx
 	ctx.Input.SetData("newrelic_transaction", tx)
 }
 func NameTransaction(ctx *context.Context) {
