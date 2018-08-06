@@ -14,8 +14,7 @@
     "toolbox",
     "utils"
   ]
-  revision = "bf5c5626ab429e66d88602e1ab1ab5fbf4629a01"
-  version = "v1.9.2"
+  revision = "f16688817aa428d10361394015b40d096b680542"
 
 [[projects]]
   name = "github.com/newrelic/go-agent"
@@ -34,6 +33,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9b89d1a9e6ef076e2534a3f2967da5d8c9364862e3c16c99cfe08d5cd34ea5b0"
+  inputs-digest = "c597246666ec947bafe117d9ac4a31725d8de2019ec02c348b4c2d381184f08c"
   solver-name = "gps-cdcl"
   solver-version = 1
