@@ -2,10 +2,9 @@ package newrelic_beego
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
-
-	"os"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
