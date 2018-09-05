@@ -1,9 +1,12 @@
 # Refer to https://golang.github.io/dep/docs/Gopkg.toml.html
 # for detailed Gopkg.toml documentation.
 
+# Beego latest version (1.9.2) is broken, fix exists only in master branch
+# More details here: https://github.com/astaxie/beego/pull/2656
+# Using latest stable commit from master instead
 [[constraint]]
   name = "github.com/astaxie/beego"
-  version = ">1.9.2"
+  revision = "f16688817aa428d10361394015b40d096b680542"
 
 [[constraint]]
   name = "github.com/newrelic/go-agent"
