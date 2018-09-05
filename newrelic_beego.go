@@ -11,37 +11,11 @@ import (
 	"github.com/newrelic/go-agent"
 )
 
-var reNumberIDInPath = regexp.MustCompile("[0-9]{2,}")
-var reg = regexp.MustCompile(`[a-zA-Z0-9_]+`)
-var NewrelicAgent newrelic.Application
-
-func StartTransaction(ctx *context.Context) {
-	tx := NewrelicAgent.StartTransaction(ctx.Request.URL.Path, ctx.ResponseWriter.ResponseWriter, ctx.Request)
-	ctx.ResponseWriter.ResponseWriter = tx
-	ctx.Input.SetData("newrelic_transaction", tx)
-}
-func NameTransaction(ctx *context.Context) {
-	var path string
-	if ctx.Input.GetData("newrelic_transaction") == nil {
-		return
-	}
-	tx := ctx.Input.GetData("newrelic_transaction").(newrelic.Transaction)
-	// in old beego pattern available only in dev mode
-	pattern, ok := ctx.Input.GetData("RouterPattern").(string)
-	if ok {
-		path = generatePath(pattern)
-	} else {
-		path = reNumberIDInPath.ReplaceAllString(ctx.Request.URL.Path, ":id")
-	}
-	txName := fmt.Sprintf("%s %s", ctx.Request.Method, path)
-	tx.SetName(txName)
-}
-func EndTransaction(ctx *context.Context) {
-	if ctx.Input.GetData("newrelic_transaction") != nil {
-		tx := ctx.Input.GetData("newrelic_transaction").(newrelic.Transaction)
-		tx.End()
-	}
-}
+var (
+	reNumberIDInPath = regexp.MustCompile("[0-9]{2,}")
+	reg              = regexp.MustCompile(`[a-zA-Z0-9_]+`)
+	NewrelicAgent    newrelic.Application
+)
 
 func init() {
 	appName := os.Getenv("NEW_RELIC_APP_NAME")
@@ -74,6 +48,36 @@ func init() {
 	beego.Info("NewRelic agent start")
 }
 
+func StartTransaction(ctx *context.Context) {
+	tx := NewrelicAgent.StartTransaction(ctx.Request.URL.Path, ctx.ResponseWriter.ResponseWriter, ctx.Request)
+	ctx.ResponseWriter.ResponseWriter = tx
+	ctx.Input.SetData("newrelic_transaction", tx)
+}
+
+func NameTransaction(ctx *context.Context) {
+	var path string
+	if ctx.Input.GetData("newrelic_transaction") == nil {
+		return
+	}
+	tx := ctx.Input.GetData("newrelic_transaction").(newrelic.Transaction)
+	// in old beego pattern available only in dev mode
+	pattern, ok := ctx.Input.GetData("RouterPattern").(string)
+	if ok {
+		path = generatePath(pattern)
+	} else {
+		path = reNumberIDInPath.ReplaceAllString(ctx.Request.URL.Path, ":id")
+	}
+	txName := fmt.Sprintf("%s %s", ctx.Request.Method, path)
+	tx.SetName(txName)
+}
+
+func EndTransaction(ctx *context.Context) {
+	if ctx.Input.GetData("newrelic_transaction") != nil {
+		tx := ctx.Input.GetData("newrelic_transaction").(newrelic.Transaction)
+		tx.End()
+	}
+}
+
 func generatePath(pattern string) string {
 	segments := splitPath(pattern)
 	for i, seg := range segments {
@@ -81,6 +85,7 @@ func generatePath(pattern string) string {
 	}
 	return strings.Join(segments, "/")
 }
+
 func splitPath(key string) []string {
 	key = strings.Trim(key, "/ ")
 	if key == "" {
@@ -88,6 +93,7 @@ func splitPath(key string) []string {
 	}
 	return strings.Split(key, "/")
 }
+
 func replaceSegment(seg string) string {
 	colonSlice := []rune{':'}
 	if strings.ContainsAny(seg, ":") {
