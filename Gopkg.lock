@@ -2,6 +2,7 @@
 
 
 [[projects]]
+  digest = "1:9498c92e3223dbe2e7a2839f3174fdb4cb507431f4d980bb5030c622233b4409"
   name = "github.com/astaxie/beego"
   packages = [
     ".",
@@ -12,12 +13,13 @@
     "logs",
     "session",
     "toolbox",
-    "utils"
+    "utils",
   ]
-  revision = "053a075344c118a5cc41981b29ef612bb53d20ca"
-  version = "v1.10.1"
+  pruneopts = "UT"
+  revision = "f16688817aa428d10361394015b40d096b680542"
 
 [[projects]]
+  digest = "1:266d082179f3a29a4bdcf1dcc49d4a304f5c7107e65bd22d1fecacf45f1ac348"
   name = "github.com/newrelic/go-agent"
   packages = [
     ".",
@@ -26,29 +28,19 @@
     "internal/jsonx",
     "internal/logger",
     "internal/sysinfo",
-    "internal/utilization"
+    "internal/utilization",
   ]
+  pruneopts = "UT"
   revision = "f5bce3387232559bcbe6a5f8227c4bf508dac1ba"
   version = "v1.11.0"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-  packages = [
-    "acme",
-    "acme/autocert"
-  ]
-  revision = "56440b844dfe139a8ac053f4ecac0b20b79058f4"
-
-[[projects]]
-  name = "gopkg.in/yaml.v2"
-  packages = ["."]
-  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
-  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6fcba6801f7c536ba1193fccf1df9b1b2e33693ff9fe5ec7002771fcf36baffa"
+  input-imports = [
+    "github.com/astaxie/beego",
+    "github.com/astaxie/beego/context",
+    "github.com/newrelic/go-agent",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
