@@ -61,6 +61,7 @@ func init() {
 		}
 	}
 	config := newrelic.NewConfig(appName, license)
+	config.CrossApplicationTracer.Enabled = false
 	app, err := newrelic.NewApplication(config)
 	if err != nil {
 		beego.Warn(err.Error())
