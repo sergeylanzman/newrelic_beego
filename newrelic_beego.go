@@ -68,13 +68,13 @@ func NameTransaction(ctx *context.Context) {
 		path = reNumberIDInPath.ReplaceAllString(ctx.Request.URL.Path, ":id")
 	}
 	txName := fmt.Sprintf("%s %s", ctx.Request.Method, path)
-	tx.SetName(txName)
+	_ = tx.SetName(txName)
 }
 
 func EndTransaction(ctx *context.Context) {
 	if ctx.Input.GetData("newrelic_transaction") != nil {
 		tx := ctx.Input.GetData("newrelic_transaction").(newrelic.Transaction)
-		tx.End()
+		_ = tx.End()
 	}
 }
 
