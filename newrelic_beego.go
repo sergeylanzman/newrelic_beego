@@ -9,6 +9,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"github.com/newrelic/go-agent"
+	"github.com/remind101/newrelic"
 )
 
 var (
@@ -67,6 +68,13 @@ func NameTransaction(ctx *context.Context) {
 	} else {
 		path = reNumberIDInPath.ReplaceAllString(ctx.Request.URL.Path, ":id")
 	}
+
+	displayExplicitEnv := beego.AppConfig.String("newrelic_display_explicit_env")
+	if displayExplicitEnv != "" {
+		env := ctx.Input.Param(":env")
+		path = strings.Replace(path, ":env", env, -1)
+	}
+
 	txName := fmt.Sprintf("%s %s", ctx.Request.Method, path)
 	_ = tx.SetName(txName)
 }
