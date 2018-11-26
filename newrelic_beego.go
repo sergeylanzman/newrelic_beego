@@ -67,6 +67,13 @@ func NameTransaction(ctx *context.Context) {
 	} else {
 		path = reNumberIDInPath.ReplaceAllString(ctx.Request.URL.Path, ":id")
 	}
+
+	displayExplicitEnv := beego.AppConfig.DefaultString("newrelic_display_explicit_env", "FALSE")
+	if strings.ToUpper(displayExplicitEnv) == "TRUE" {
+		env := strings.ToUpper(ctx.Input.Param(":env"))
+		path = strings.Replace(path, ":env", env, -1)
+	}
+
 	txName := fmt.Sprintf("%s %s", ctx.Request.Method, path)
 	_ = tx.SetName(txName)
 }
