@@ -8,7 +8,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	"github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent"
 )
 
 var (
@@ -17,23 +17,33 @@ var (
 	NewrelicAgent    newrelic.Application
 )
 
+const newRelicSkipPaths = "newrelic_skip_paths"
+const newRelicAppName = "appname"
+const newRelicLicense = "newrelic_license"
+
+// Paths NewRelic needs to skip from reporting
+var skipPaths map[string]bool
+
 func init() {
 	appName := os.Getenv("NEW_RELIC_APP_NAME")
 	license := os.Getenv("NEW_RELIC_LICENSE_KEY")
+
+	skipPaths = parseSkipPaths(beego.AppConfig.String(newRelicSkipPaths))
 
 	if appName == "" {
 		appName = beego.AppConfig.String("newrelic_appname")
 	}
 	if appName == "" {
-		appName = beego.AppConfig.String("appname")
+		appName = beego.AppConfig.String(newRelicAppName)
 	}
 	if license == "" {
-		license = beego.AppConfig.String("newrelic_license")
+		license = beego.AppConfig.String(newRelicLicense)
 		if license == "" && beego.BConfig.RunMode == "prod" {
 			beego.Warn("Please set NewRelic license in config(newrelic_license)")
 			return
 		}
 	}
+
 	config := newrelic.NewConfig(appName, license)
 	config.CrossApplicationTracer.Enabled = false
 	app, err := newrelic.NewApplication(config)
@@ -45,21 +55,62 @@ func init() {
 	beego.InsertFilter("*", beego.BeforeRouter, StartTransaction, false)
 	beego.InsertFilter("*", beego.AfterExec, NameTransaction, false)
 	beego.InsertFilter("*", beego.FinishRouter, EndTransaction, false)
-	beego.Info("NewRelic agent start")
+	beego.Info("NewRelic agent started")
 }
 
+// parseSkipPaths gets string of comma separated paths
+// It returns a set of normalized paths
+func parseSkipPaths(pathsConfig string) map[string]bool {
+	paths := map[string]bool{}
+	splitPaths := strings.Split(pathsConfig, ",")
+
+	for _, path := range splitPaths {
+		formatted := strings.TrimSpace(path)
+		formatted = strings.ToLower(formatted)
+		if formatted != "" {
+			paths[formatted] = true
+		}
+	}
+
+	return paths
+}
+
+const newRelicTransaction = "newrelic_transaction"
+
 func StartTransaction(ctx *context.Context) {
+	if shouldSkip(skipPaths, ctx.Request.URL.Path) {
+		return
+	}
+
 	tx := NewrelicAgent.StartTransaction(ctx.Request.URL.Path, ctx.ResponseWriter.ResponseWriter, ctx.Request)
 	ctx.ResponseWriter.ResponseWriter = tx
-	ctx.Input.SetData("newrelic_transaction", tx)
+	ctx.Input.SetData(newRelicTransaction, tx)
+}
+
+// shouldSkip decides if given path matches against declared skip paths
+// Support both exact matches and wildcard matches
+func shouldSkip(skipPaths map[string]bool, path string) bool {
+	_, exactMatch := skipPaths[path]
+
+	if exactMatch {
+		return true
+	}
+
+	for skipPath := range skipPaths {
+		if strings.Contains(path, skipPath) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func NameTransaction(ctx *context.Context) {
 	var path string
-	if ctx.Input.GetData("newrelic_transaction") == nil {
+	if ctx.Input.GetData(newRelicTransaction) == nil {
 		return
 	}
-	tx := ctx.Input.GetData("newrelic_transaction").(newrelic.Transaction)
+	tx := ctx.Input.GetData(newRelicTransaction).(newrelic.Transaction)
 	// in old beego pattern available only in dev mode
 	pattern, ok := ctx.Input.GetData("RouterPattern").(string)
 	if ok {
@@ -79,8 +130,8 @@ func NameTransaction(ctx *context.Context) {
 }
 
 func EndTransaction(ctx *context.Context) {
-	if ctx.Input.GetData("newrelic_transaction") != nil {
-		tx := ctx.Input.GetData("newrelic_transaction").(newrelic.Transaction)
+	if ctx.Input.GetData(newRelicTransaction) != nil {
+		tx := ctx.Input.GetData(newRelicTransaction).(newrelic.Transaction)
 		_ = tx.End()
 	}
 }

@@ -1,12 +1,15 @@
-newrelic_beego
-=============
+[![Build Status](https://travis-ci.com/gtforge/newrelic_beego.svg?branch=master)](https://travis-ci.com/gtforge/newrelic_beego)
 
-newrelic_beego is "plug and play" package for monitoring(APM) beego framework with newrelic offical agent
+NewRelic BeeGo
+==============
 
-Support http endpoints
+NewRelic BeeGo is "plug and play" package for monitoring (APM) BeeGo framework with NewRelic official agent<br />
+
+Supports HTTP endpoints
  
-Can Get newrelic_beego.NewrelicAgent for custom monitoring(database,external call, func etc..)
-Can Get newrelic transaction per request from beego context
+You can use exposed newrelic_beego.NewrelicAgent for custom monitoring, such as database, external calls, functions, etc.
+
+Also, you can get NewRelic transaction per request from BeeGo context:
 ```
 txn := ctx.Input.GetData("newrelic_transaction").(newrelic.Transaction)
 defer txn.EndDatastore(txn.StartSegment(), datastore.Segment{
@@ -22,11 +25,16 @@ defer txn.EndDatastore(txn.StartSegment(), datastore.Segment{
 
 # Installation
 ```
-go get github.com/sergeylanzman/newrelic_beego"
+dep ensure -v
 ```
 
-Add  _ "github.com/sergeylanzman/newrelic_beego" to import in main.go file
+Add  `_ "github.com/gtforge/newrelic_beego"` as an import in `main.go` file
 
-# Settings
-    - appname = name of app in newrelic
-    - newrelic_license = newrelic license
+# Available settings
+- appname = name of app in newrelic
+- newrelic_appname = same as `appname`
+- newrelic_license = NewRelic license key
+- newrelic_display_explicit_env = TRUE will display `RU/IL/UK` in the URL. FALSE will display just `:env`
+- newrelic_skip_paths = comma separated paths that shouldn't be logged by NewRelic.
+    - Example: `/api/v1/dosomething, /debug/`
+    - Note: matching is fuzzy, with above example any path that contains `/debug/` will be skipped
