@@ -53,7 +53,6 @@ func init() {
 	}
 	NewrelicAgent = app
 	beego.InsertFilter("*", beego.BeforeRouter, StartTransaction, false)
-	beego.InsertFilter("*", beego.AfterExec, NameTransaction, false)
 	beego.InsertFilter("*", beego.FinishRouter, EndTransaction, false)
 	beego.Info("NewRelic agent started")
 }
@@ -130,6 +129,7 @@ func NameTransaction(ctx *context.Context) {
 }
 
 func EndTransaction(ctx *context.Context) {
+	NameTransaction(ctx)
 	if ctx.Input.GetData(newRelicTransaction) != nil {
 		tx := ctx.Input.GetData(newRelicTransaction).(newrelic.Transaction)
 		_ = tx.End()
